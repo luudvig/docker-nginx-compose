@@ -1,0 +1,28 @@
+services:
+  certbot:
+    command: renew --standalone
+    image: certbot/certbot:latest
+    network_mode: host
+    profiles:
+      - disabled
+    volumes:
+      - ./data-certbot:/etc/letsencrypt
+
+  proxy:
+    environment:
+      - NGINX_SERVER_NAME_A
+      - NGINX_SERVER_NAME_B
+    image: nginx:stable
+    network_mode: host
+    restart: always
+    secrets:
+      - ssl_certificate
+      - ssl_certificate_key
+    volumes:
+      - ./templates:/etc/nginx/templates:ro
+
+secrets:
+  ssl_certificate:
+    file: ./secrets/fullchain.pem
+  ssl_certificate_key:
+    file: ./secrets/privkey.pem

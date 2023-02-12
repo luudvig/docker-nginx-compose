@@ -1,0 +1,32 @@
+server {
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    location / {
+        return 301 https://$host$request_uri;
+    }
+}
+
+server {
+    server_name ${NGINX_SERVER_NAME_A} www.${NGINX_SERVER_NAME_A};
+    set $upstream 2368;
+
+    include conf.d/http;
+}
+
+server {
+    server_name ${NGINX_SERVER_NAME_B};
+    set $upstream 2369;
+
+    include conf.d/http;
+
+    location /files/ {
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+
+        proxy_pass http://127.0.0.1:8384/;
+
+        proxy_read_timeout 600s;
+        proxy_send_timeout 600s;
+    }
+}
